@@ -1,6 +1,6 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
 
-import { api } from "../api/client";
+import { api, isDemoModeEnabled } from "../api/client";
 import type {
   AnalyticsSummary,
   GeneratedBoard,
@@ -20,6 +20,7 @@ interface DashboardState {
   analytics: AnalyticsSummary | null;
   trending: TrendingSummary | null;
   recommendedAesthetics: string[];
+  demoMode: boolean;
 }
 
 const defaultState: DashboardState = {
@@ -30,7 +31,8 @@ const defaultState: DashboardState = {
   pinterestBoards: [],
   analytics: null,
   trending: null,
-  recommendedAesthetics: []
+  recommendedAesthetics: [],
+  demoMode: false
 };
 
 export function useDashboardData() {
@@ -71,7 +73,8 @@ export function useDashboardData() {
           analytics,
           trending,
           pinterestBoards,
-          recommendedAesthetics
+          recommendedAesthetics,
+          demoMode: isDemoModeEnabled()
         }));
       });
     } catch (refreshError) {

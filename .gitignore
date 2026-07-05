@@ -18,5 +18,9 @@ coverage/
 *.tsbuildinfo
 *.log
 *.egg-info/
+frontend/tailwind.config.js
+frontend/tailwind.config.d.ts
+frontend/vite.config.js
+frontend/vite.config.d.ts
 backend/.alembic/
 backend/uploads/

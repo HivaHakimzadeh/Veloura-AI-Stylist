@@ -35,6 +35,11 @@ export function DashboardPage() {
               Veloura blends AI product classification, aesthetic-based outfit generation, board rendering, and campaign
               scheduling into a single workflow built for fashion content operations.
             </p>
+            {dashboard.demoMode ? (
+              <p className="mt-3 inline-flex rounded-full bg-white/80 px-4 py-2 text-sm text-espresso/75">
+                Backend unavailable, so the dashboard is running in built-in demo mode with local sample data.
+              </p>
+            ) : null}
             {dashboard.error ? <p className="mt-3 text-sm text-rosewood">{dashboard.error}</p> : null}
           </div>
           <div className="grid gap-4">
@@ -89,4 +94,3 @@ export function DashboardPage() {
     </AppShell>
   );
 }
-

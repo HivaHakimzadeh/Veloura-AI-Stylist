@@ -12,9 +12,15 @@ from app.schemas.product import ProductCreate, ProductTaggingResult
 
 class AIProductTaggingService:
     CATEGORY_KEYWORDS: dict[ProductCategory, tuple[str, ...]] = {
+        ProductCategory.SHOES: ("shoe", "shoes", "heel", "heels", "boot", "boots", "loafer", "sneaker", "sandals", "sandal", "mules"),
+        ProductCategory.BAGS: ("bag", "tote", "clutch", "crossbody", "purse", "handbag"),
+        ProductCategory.JEWELRY: ("necklace", "ring", "bracelet", "earring", "jewelry", "pendant"),
+        ProductCategory.ACCESSORIES: ("belt", "scarf", "hat", "sunglasses", "watch", "hair clip"),
+        ProductCategory.DRESSES: ("dress", "gown", "slip dress", "maxi dress", "mini dress"),
         ProductCategory.TOPS: (
             "shirt",
             "top",
+            "tops",
             "blouse",
             "tee",
             "sweater",
@@ -22,13 +28,9 @@ class AIProductTaggingService:
             "tank",
             "blazer",
             "jacket",
+            "cami",
         ),
-        ProductCategory.BOTTOMS: ("jean", "pant", "trouser", "short", "skirt", "legging"),
-        ProductCategory.DRESSES: ("dress", "gown", "slip dress"),
-        ProductCategory.SHOES: ("shoe", "heel", "boot", "loafer", "sneaker", "sandal"),
-        ProductCategory.BAGS: ("bag", "tote", "clutch", "crossbody", "purse"),
-        ProductCategory.JEWELRY: ("necklace", "ring", "bracelet", "earring", "jewelry"),
-        ProductCategory.ACCESSORIES: ("belt", "scarf", "hat", "sunglasses", "watch"),
+        ProductCategory.BOTTOMS: ("jean", "jeans", "pant", "pants", "trouser", "trousers", "short", "shorts", "skirt", "skorts", "legging"),
     }
     AESTHETICS = {
         "Old Money": {"neutral", "tailored", "linen", "cashmere", "classic"},
@@ -70,15 +72,17 @@ class AIProductTaggingService:
                     "role": "system",
                     "content": (
                         "Classify fashion products and return JSON with category, color_palette, "
-                        "aesthetic, season, occasion, ai_summary."
+                        "aesthetic, season, occasion, ai_summary. "
+                        "Valid categories are: tops, bottoms, dresses, shoes, bags, jewelry, accessories."
                     ),
                 },
                 {"role": "user", "content": json.dumps(prompt)},
             ],
         )
         payload = json.loads(response.choices[0].message.content or "{}")
+        suggested_category = payload.get("category")
         return ProductTaggingResult(
-            category=ProductCategory(payload.get("category", self._infer_category(product))),
+            category=self._resolve_category(product, suggested_category),
             color_palette=payload.get("color_palette", self._palette_from_color(product.color)),
             aesthetic=payload.get("aesthetic", self._infer_aesthetic(product.style_tags, product.title)),
             season=payload.get("season", self._infer_season(product)),
@@ -88,7 +92,7 @@ class AIProductTaggingService:
 
     def _tag_with_rules(self, product: ProductCreate) -> ProductTaggingResult:
         return ProductTaggingResult(
-            category=product.category or self._infer_category(product),
+            category=self._resolve_category(product, product.category.value if product.category else None),
             color_palette=self._palette_from_color(product.color),
             aesthetic=self._infer_aesthetic(product.style_tags, product.title),
             season=self._infer_season(product),
@@ -97,11 +101,37 @@ class AIProductTaggingService:
         )
 
     def _infer_category(self, product: ProductCreate) -> ProductCategory:
-        haystack = f"{product.title} {' '.join(product.style_tags)}".lower()
-        for category, keywords in self.CATEGORY_KEYWORDS.items():
-            if any(keyword in haystack for keyword in keywords):
-                return category
+        scores = self._category_scores(product)
+        best_category, best_score = max(scores.items(), key=lambda item: item[1])
+        if best_score > 0:
+            return best_category
         return ProductCategory.ACCESSORIES
+
+    def _resolve_category(self, product: ProductCreate, suggested_category: Optional[str]) -> ProductCategory:
+        heuristic_category = self._infer_category(product)
+        if suggested_category is None:
+            return heuristic_category
+
+        try:
+            normalized = ProductCategory(str(suggested_category).strip().lower())
+        except ValueError:
+            return heuristic_category
+
+        if normalized == heuristic_category:
+            return normalized
+
+        heuristic_score = self._category_scores(product)[heuristic_category]
+        suggested_score = self._category_scores(product)[normalized]
+        if heuristic_score >= max(2, suggested_score + 1):
+            return heuristic_category
+        return normalized
+
+    def _category_scores(self, product: ProductCreate) -> dict[ProductCategory, int]:
+        haystack = f"{product.title} {' '.join(product.style_tags)} {' '.join(product.occasion_tags)}".lower()
+        return {
+            category: sum(haystack.count(keyword) for keyword in keywords)
+            for category, keywords in self.CATEGORY_KEYWORDS.items()
+        }
 
     def _palette_from_color(self, color: str) -> list[str]:
         base = color.lower().strip()

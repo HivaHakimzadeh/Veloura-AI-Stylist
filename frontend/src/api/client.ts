@@ -68,6 +68,11 @@ async function withFallback<T>(remote: () => Promise<T>, fallback: () => T | Pro
 
 export const api = {
   listProducts: () => withFallback(() => request<Product[]>("/products/"), () => demoApi.listProducts()),
+  deleteProduct: (productId: number) =>
+    withFallback(
+      () => request<void>(`/products/${productId}`, { method: "DELETE" }),
+      () => demoApi.deleteProduct(productId)
+    ),
   importProductFromUrl: (payload: { url: string; affiliate_link?: string }) =>
     withFallback(
       () =>

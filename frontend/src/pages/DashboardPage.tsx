@@ -59,7 +59,12 @@ export function DashboardPage() {
             void dashboard.refresh();
           }}
         />
-        <ProductGrid products={dashboard.products} />
+        <ProductGrid
+          products={dashboard.products}
+          onDeleted={() => {
+            void dashboard.refresh();
+          }}
+        />
       </div>
 
       <OutfitGallery

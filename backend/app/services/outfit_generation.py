@@ -35,7 +35,7 @@ class OutfitGenerationService:
             if not selected:
                 continue
 
-            season = self._dominant_value([item.season for item in selected], "All Season")
+            season = self._dominant_value([product.season for _, product in selected], "All Season")
             occasion = self._occasion_for_aesthetic(aesthetic)
             keywords = self._keywords(selected, aesthetic, occasion)
             outfit = outfit_repository.create(

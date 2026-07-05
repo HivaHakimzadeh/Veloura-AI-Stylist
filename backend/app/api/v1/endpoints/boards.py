@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
+from app.repositories.board import board_repository
 from app.repositories.outfit import outfit_repository
 from app.schemas.board import BoardGenerationRequest, GeneratedBoardRead
 from app.services.board_generation import BoardGenerationService

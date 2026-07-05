@@ -24,3 +24,4 @@ frontend/vite.config.js
 frontend/vite.config.d.ts
 backend/.alembic/
 backend/uploads/
+backend/*.db

@@ -29,6 +29,10 @@ export function OutfitGallery({ outfits, recommendedAesthetics, onGenerated }: O
     try {
       const aesthetics = recommendedAesthetics.length ? recommendedAesthetics : defaultAesthetics;
       const generated = await api.generateOutfits(aesthetics);
+      if (!generated.length) {
+        setError("No compatible outfits yet. Add at least a top and bottom or a dress, then try again.");
+        return;
+      }
       onGenerated(generated);
     } catch (generationError) {
       setError(generationError instanceof Error ? generationError.message : "Unable to generate outfits.");
@@ -99,4 +103,3 @@ export function OutfitGallery({ outfits, recommendedAesthetics, onGenerated }: O
     </SectionCard>
   );
 }
-

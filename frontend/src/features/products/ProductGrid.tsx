@@ -1,14 +1,18 @@
 import { useDeferredValue, useState } from "react";
 
+import { api } from "../../api/client";
 import { SectionCard } from "../../components/SectionCard";
 import type { Product } from "../../types/domain";
 
 interface ProductGridProps {
   products: Product[];
+  onDeleted: () => void;
 }
 
-export function ProductGrid({ products }: ProductGridProps) {
+export function ProductGrid({ products, onDeleted }: ProductGridProps) {
   const [query, setQuery] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(query);
   const filtered = products.filter((product) => {
     const search = deferredQuery.trim().toLowerCase();
@@ -19,6 +23,19 @@ export function ProductGrid({ products }: ProductGridProps) {
       product.aesthetic.toLowerCase().includes(search)
     );
   });
+
+  const handleDelete = async (productId: number) => {
+    setDeletingId(productId);
+    setError(null);
+    try {
+      await api.deleteProduct(productId);
+      onDeleted();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Unable to delete product.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <SectionCard
@@ -33,6 +50,7 @@ export function ProductGrid({ products }: ProductGridProps) {
         />
       }
     >
+      {error ? <p className="mb-4 text-sm text-rosewood">{error}</p> : null}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((product) => (
           <article key={product.id} className="overflow-hidden rounded-[28px] border border-white/60 bg-white/75">
@@ -65,14 +83,24 @@ export function ProductGrid({ products }: ProductGridProps) {
               </div>
               <div className="flex items-center justify-between">
                 <p className="font-medium">${product.price.toFixed(2)}</p>
-                <a
-                  className="text-sm text-rosewood underline-offset-4 hover:underline"
-                  href={product.affiliate_link}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Affiliate link
-                </a>
+                <div className="flex items-center gap-3">
+                  <a
+                    className="text-sm text-rosewood underline-offset-4 hover:underline"
+                    href={product.affiliate_link}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Affiliate link
+                  </a>
+                  <button
+                    className="rounded-full border border-rosewood/20 px-3 py-1 text-xs font-medium text-rosewood transition hover:bg-rosewood/10 disabled:opacity-60"
+                    type="button"
+                    onClick={() => void handleDelete(product.id)}
+                    disabled={deletingId === product.id}
+                  >
+                    {deletingId === product.id ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
               </div>
             </div>
           </article>
@@ -82,4 +110,3 @@ export function ProductGrid({ products }: ProductGridProps) {
     </SectionCard>
   );
 }
-

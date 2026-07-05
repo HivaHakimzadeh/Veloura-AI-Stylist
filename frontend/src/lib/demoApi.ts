@@ -28,7 +28,13 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function compactText(value: string, maxLength: number) {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
+}
+
 function svgDataUri(title: string, subtitle: string, accent = "#9c5f50", background = "#f6eee4") {
+  const safeTitle = compactText(title, 36);
+  const safeSubtitle = compactText(subtitle, 28);
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1500" viewBox="0 0 1000 1500">
       <rect width="1000" height="1500" rx="48" fill="${background}" />
@@ -36,8 +42,8 @@ function svgDataUri(title: string, subtitle: string, accent = "#9c5f50", backgro
       <circle cx="170" cy="170" r="72" fill="${accent}" opacity="0.15" />
       <circle cx="820" cy="1280" r="96" fill="${accent}" opacity="0.12" />
       <text x="86" y="120" font-family="Georgia, serif" font-size="36" fill="${accent}">Veloura</text>
-      <text x="86" y="190" font-family="Georgia, serif" font-size="48" fill="#2e2018">${title}</text>
-      <text x="86" y="238" font-family="Arial, sans-serif" font-size="24" fill="#7a6758">${subtitle}</text>
+      <text x="86" y="190" font-family="Georgia, serif" font-size="48" fill="#2e2018">${safeTitle}</text>
+      <text x="86" y="238" font-family="Arial, sans-serif" font-size="24" fill="#7a6758">${safeSubtitle}</text>
       <rect x="86" y="320" width="360" height="460" rx="32" fill="#eadbcf" />
       <rect x="554" y="320" width="360" height="460" rx="32" fill="#e6d6ca" />
       <rect x="86" y="860" width="360" height="460" rx="32" fill="#efe3d7" />
@@ -268,14 +274,27 @@ export const demoApi = {
     return readState().products;
   },
 
+  deleteProduct(productId: number) {
+    const state = readState();
+    state.products = state.products.filter((product) => product.id !== productId);
+    writeState(state);
+  },
+
   importProductFromUrl(payload: { url: string; affiliate_link?: string }): ProductImportPreview {
-    const slug = payload.url
-      .split("/")
-      .filter(Boolean)
-      .pop()
-      ?.replace(/[-_]+/g, " ")
-      .replace(/\.[a-z0-9]+$/i, "")
-      .trim();
+    let slug = "";
+    try {
+      const parsed = new URL(payload.url);
+      slug =
+        parsed.pathname
+          .split("/")
+          .filter(Boolean)
+          .pop()
+          ?.replace(/[-_]+/g, " ")
+          .replace(/\.[a-z0-9]+$/i, "")
+          .trim() ?? "";
+    } catch (_error) {
+      slug = "";
+    }
     const title = slug
       ? slug.replace(/\b\w/g, (character) => character.toUpperCase())
       : "Imported Fashion Product";

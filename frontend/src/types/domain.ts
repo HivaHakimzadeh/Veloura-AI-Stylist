@@ -43,6 +43,18 @@ export interface ProductPayload {
   run_ai_tagging: boolean;
 }
 
+export interface ProductImportPreview {
+  title: string;
+  brand: string;
+  price: number;
+  image_url: string;
+  affiliate_link: string;
+  color: string;
+  style_tags: string[];
+  occasion_tags: string[];
+  category?: ProductCategory;
+}
+
 export interface OutfitItem {
   id: number;
   slot: string;
@@ -123,4 +135,3 @@ export interface TrendingSummary {
   keywords: string[];
   occasions: string[];
 }
-

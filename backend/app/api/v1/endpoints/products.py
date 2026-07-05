@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_id, get_db
-from app.repositories.product import product_repository
-from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
-from app.services.ai_tagging import AIProductTaggingService
 from app.core.config import get_settings
+from app.repositories.product import product_repository
+from app.schemas.product import ProductCreate, ProductImportPreview, ProductImportRequest, ProductRead, ProductUpdate
+from app.services.ai_tagging import AIProductTaggingService
+from app.services.product_import import ProductImportService
 
 router = APIRouter()
 settings = get_settings()
@@ -46,6 +47,20 @@ def create_product(
     db.commit()
     db.refresh(product)
     return product
+
+
+@router.post("/import-from-url", response_model=ProductImportPreview)
+def import_product_from_url(payload: ProductImportRequest) -> ProductImportPreview:
+    try:
+        return ProductImportService().import_preview(str(payload.url), str(payload.affiliate_link or payload.url))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Veloura couldn't auto-extract this product yet. "
+                "Some stores block scraping or hide pricing in scripts."
+            ),
+        ) from exc
 
 
 @router.get("/{product_id}", response_model=ProductRead)

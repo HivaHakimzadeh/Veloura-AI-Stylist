@@ -6,6 +6,7 @@ import type {
   OutfitItem,
   PinterestBoard,
   Product,
+  ProductImportPreview,
   ProductCategory,
   ProductPayload,
   ScheduledPost,
@@ -267,6 +268,31 @@ export const demoApi = {
     return readState().products;
   },
 
+  importProductFromUrl(payload: { url: string; affiliate_link?: string }): ProductImportPreview {
+    const slug = payload.url
+      .split("/")
+      .filter(Boolean)
+      .pop()
+      ?.replace(/[-_]+/g, " ")
+      .replace(/\.[a-z0-9]+$/i, "")
+      .trim();
+    const title = slug
+      ? slug.replace(/\b\w/g, (character) => character.toUpperCase())
+      : "Imported Fashion Product";
+    const category = inferCategory(title);
+    return {
+      title,
+      brand: "Imported Brand",
+      price: 79.99,
+      image_url: svgDataUri(title, "Imported preview"),
+      affiliate_link: payload.affiliate_link || payload.url,
+      color: "Neutral",
+      style_tags: ["versatile"],
+      occasion_tags: ["everyday"],
+      category
+    };
+  },
+
   createProduct(payload: ProductPayload) {
     const state = readState();
     const timestamp = nowIso();
@@ -442,4 +468,3 @@ export const demoApi = {
     return buildTrending(readState());
   }
 };
-

@@ -4,6 +4,7 @@ import type {
   Outfit,
   PinterestBoard,
   Product,
+  ProductImportPreview,
   ProductPayload,
   ScheduledPost,
   TrendingSummary
@@ -67,6 +68,15 @@ async function withFallback<T>(remote: () => Promise<T>, fallback: () => T | Pro
 
 export const api = {
   listProducts: () => withFallback(() => request<Product[]>("/products/"), () => demoApi.listProducts()),
+  importProductFromUrl: (payload: { url: string; affiliate_link?: string }) =>
+    withFallback(
+      () =>
+        request<ProductImportPreview>("/products/import-from-url", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        }),
+      () => demoApi.importProductFromUrl(payload)
+    ),
   createProduct: (payload: ProductPayload) =>
     withFallback(
       () => request<Product>("/products/", { method: "POST", body: JSON.stringify(payload) }),

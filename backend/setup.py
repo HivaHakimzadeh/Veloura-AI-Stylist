@@ -9,6 +9,7 @@ setup(
     python_requires=">=3.9",
     install_requires=[
         "alembic>=1.13.2",
+        "beautifulsoup4>=4.12.3",
         "boto3>=1.34.0",
         "celery[redis]>=5.4.0",
         "fastapi>=0.111.0",

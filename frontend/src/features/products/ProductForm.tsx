@@ -19,6 +19,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ onCreated }: ProductFormProps) {
+  const [importUrl, setImportUrl] = useState("");
   const [form, setForm] = useState({
     title: "",
     category: "" as ProductCategory | "",
@@ -32,7 +33,33 @@ export function ProductForm({ onCreated }: ProductFormProps) {
     run_ai_tagging: true
   });
   const [submitting, setSubmitting] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const importFromUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    setError(null);
+    try {
+      const preview = await api.importProductFromUrl({ url: importUrl.trim() });
+      setForm((current) => ({
+        ...current,
+        title: preview.title,
+        category: preview.category ?? current.category,
+        price: String(preview.price),
+        image_url: preview.image_url,
+        affiliate_link: preview.affiliate_link,
+        color: preview.color,
+        style_tags: preview.style_tags.join(", "),
+        brand: preview.brand,
+        occasion_tags: preview.occasion_tags.join(", ")
+      }));
+    } catch (importError) {
+      setError(importError instanceof Error ? importError.message : "Unable to import product from URL.");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,6 +100,28 @@ export function ProductForm({ onCreated }: ProductFormProps) {
 
   return (
     <SectionCard title="Product Intake" eyebrow="Catalog">
+      <div className="mb-5 rounded-[28px] border border-white/60 bg-white/55 p-4">
+        <p className="font-display text-xl text-espresso">Import From Product URL</p>
+        <p className="mt-1 text-sm text-espresso/70">
+          Paste a product page URL and Veloura will try to pull title, brand, price, image, color, and category before you save.
+        </p>
+        <div className="mt-4 flex flex-col gap-3 md:flex-row">
+          <input
+            className="flex-1 rounded-2xl border border-white/60 bg-white/80 px-4 py-3"
+            placeholder="https://..."
+            value={importUrl}
+            onChange={(event) => setImportUrl(event.target.value)}
+          />
+          <button
+            className="rounded-full bg-rosewood px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+            onClick={() => void importFromUrl()}
+            type="button"
+            disabled={importing || !importUrl.trim()}
+          >
+            {importing ? "Importing..." : "Import URL"}
+          </button>
+        </div>
+      </div>
       <form className="grid gap-4 md:grid-cols-2" onSubmit={submit}>
         <input
           className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
@@ -168,4 +217,3 @@ export function ProductForm({ onCreated }: ProductFormProps) {
     </SectionCard>
   );
 }
-

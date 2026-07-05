@@ -49,6 +49,23 @@ class ProductTaggingResult(BaseModel):
     ai_summary: str
 
 
+class ProductImportRequest(BaseModel):
+    url: HttpUrl
+    affiliate_link: Optional[HttpUrl] = None
+
+
+class ProductImportPreview(BaseModel):
+    title: str
+    brand: str
+    price: float
+    image_url: str
+    affiliate_link: str
+    color: str
+    style_tags: list[str] = Field(default_factory=list)
+    occasion_tags: list[str] = Field(default_factory=list)
+    category: Optional[ProductCategory] = None
+
+
 class ProductRead(TimestampedSchema):
     user_id: int
     title: str

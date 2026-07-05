@@ -7,6 +7,21 @@
   </head>
   <body class="bg-sand">
     <div id="root"></div>
+    <div id="__probe" style="position:fixed;top:0;left:0;z-index:99999;background:red;color:#fff;font:14px monospace;padding:4px"></div>
+    <script>
+      setTimeout(function () {
+        var d = document.documentElement;
+        var offenders = [];
+        document.querySelectorAll("*").forEach(function (el) {
+          var r = el.getBoundingClientRect();
+          if (r.right > window.innerWidth + 1) {
+            offenders.push(el.tagName + "." + (el.className && el.className.toString ? el.className.toString().slice(0, 30) : "") + "=" + Math.round(r.right));
+          }
+        });
+        document.getElementById("__probe").textContent =
+          "inner=" + window.innerWidth + " scroll=" + d.scrollWidth + " | " + offenders.slice(0, 4).join(" ");
+      }, 3500);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

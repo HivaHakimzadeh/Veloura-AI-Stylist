@@ -33,7 +33,7 @@ export function BoardGallery({ outfits, boards, onCreated }: BoardGalleryProps) 
     <SectionCard title="Pinterest Boards" eyebrow="Collage Studio">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
         <select
-          className="rounded-full border border-white/60 bg-white/70 px-4 py-3 text-sm"
+          className="rounded-full border border-line bg-parchment/70 px-4 py-3 text-sm"
           value={selectedOutfit}
           onChange={(event) => setSelectedOutfit(Number(event.target.value))}
         >
@@ -55,7 +55,7 @@ export function BoardGallery({ outfits, boards, onCreated }: BoardGalleryProps) 
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {boards.map((board) => (
-          <article key={board.id} className="overflow-hidden rounded-[28px] border border-white/60 bg-white/75">
+          <article key={board.id} className="overflow-hidden rounded-[28px] border border-line bg-parchment/70">
             <img src={resolveAssetUrl(board.image_url)} alt={board.title} className="h-[380px] w-full object-cover" />
             <div className="p-5">
               <h3 className="font-display text-xl">{board.title}</h3>
@@ -66,7 +66,7 @@ export function BoardGallery({ outfits, boards, onCreated }: BoardGalleryProps) 
           </article>
         ))}
         {!boards.length ? (
-          <div className="rounded-[28px] border border-dashed border-white/70 bg-white/40 p-6 text-sm text-espresso/70">
+          <div className="rounded-[28px] border border-dashed border-line bg-parchment/50 p-6 text-sm text-espresso/70">
             Generate a board from one of your outfits to create a Pinterest-ready visual asset.
           </div>
         ) : null}

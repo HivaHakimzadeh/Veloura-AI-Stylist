@@ -43,7 +43,7 @@ export function ProductGrid({ products, onDeleted }: ProductGridProps) {
       eyebrow="Products"
       action={
         <input
-          className="w-56 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-sm"
+          className="w-56 rounded-full border border-line bg-parchment/70 px-4 py-2 text-sm"
           placeholder="Search products"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -51,61 +51,66 @@ export function ProductGrid({ products, onDeleted }: ProductGridProps) {
       }
     >
       {error ? <p className="mb-4 text-sm text-rosewood">{error}</p> : null}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((product) => (
-          <article key={product.id} className="overflow-hidden rounded-[28px] border border-white/60 bg-white/75">
-            <img
-              src={product.image_url}
-              alt={product.title}
-              className="h-56 w-full object-cover"
-              onError={(event) => {
-                event.currentTarget.src =
-                  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80";
-              }}
-            />
-            <div className="space-y-3 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-display text-xl">{product.title}</h3>
-                  <p className="text-sm text-espresso/60">{product.brand}</p>
-                </div>
-                <span className="rounded-full bg-sand px-3 py-1 text-xs uppercase tracking-[0.2em]">
-                  {product.category}
-                </span>
-              </div>
-              <p className="text-sm text-espresso/75">{product.ai_summary}</p>
-              <div className="flex flex-wrap gap-2">
-                {[product.aesthetic, product.season, ...product.color_palette.slice(0, 2)].map((tag) => (
-                  <span key={tag} className="rounded-full bg-espresso/5 px-3 py-1 text-xs text-espresso/70">
+          <article
+            key={product.id}
+            className="group flex flex-col overflow-hidden rounded-[20px] border border-line bg-parchment/70 transition-all duration-300 hover:-translate-y-1 hover:shadow-card"
+          >
+            <div className="relative overflow-hidden">
+              <img
+                src={product.image_url}
+                alt={product.title}
+                className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                onError={(event) => {
+                  event.currentTarget.src =
+                    "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80";
+                }}
+              />
+              <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-espresso/75 backdrop-blur">
+                {product.category}
+              </span>
+              <button
+                className="absolute right-3 top-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-rosewood opacity-0 backdrop-blur transition hover:bg-rosewood hover:text-white group-hover:opacity-100 disabled:opacity-60"
+                type="button"
+                onClick={() => void handleDelete(product.id)}
+                disabled={deletingId === product.id}
+              >
+                {deletingId === product.id ? "…" : "Remove"}
+              </button>
+            </div>
+            <div className="flex flex-1 flex-col p-4">
+              <h3 className="font-display text-lg leading-snug text-ink line-clamp-2">{product.title}</h3>
+              <p className="mt-0.5 text-xs uppercase tracking-[0.12em] text-espresso/45">{product.brand}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {[product.aesthetic, product.season].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-espresso/[0.06] px-2.5 py-1 text-[11px] text-espresso/65"
+                  >
                     {tag}
                   </span>
                 ))}
               </div>
-              <div className="flex items-center justify-between">
-                <p className="font-medium">${product.price.toFixed(2)}</p>
-                <div className="flex items-center gap-3">
-                  <a
-                    className="text-sm text-rosewood underline-offset-4 hover:underline"
-                    href={product.affiliate_link}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Affiliate link
-                  </a>
-                  <button
-                    className="rounded-full border border-rosewood/20 px-3 py-1 text-xs font-medium text-rosewood transition hover:bg-rosewood/10 disabled:opacity-60"
-                    type="button"
-                    onClick={() => void handleDelete(product.id)}
-                    disabled={deletingId === product.id}
-                  >
-                    {deletingId === product.id ? "Deleting..." : "Delete"}
-                  </button>
-                </div>
+              <div className="mt-auto flex items-center justify-between border-t border-line pt-4">
+                <p className="font-display text-lg text-ink">${product.price.toFixed(2)}</p>
+                <a
+                  className="text-xs font-medium uppercase tracking-[0.14em] text-rosewood underline-offset-4 hover:underline"
+                  href={product.affiliate_link}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Shop →
+                </a>
               </div>
             </div>
           </article>
         ))}
-        {!filtered.length ? <p className="text-sm text-espresso/60">No products yet.</p> : null}
+        {!filtered.length ? (
+          <p className="col-span-full rounded-[20px] border border-dashed border-line bg-parchment/40 p-8 text-center text-sm text-espresso/55">
+            No products yet.
+          </p>
+        ) : null}
       </div>
     </SectionCard>
   );

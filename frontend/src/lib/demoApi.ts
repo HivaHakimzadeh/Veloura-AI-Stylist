@@ -23,6 +23,41 @@ interface DemoState {
 }
 
 const STORAGE_KEY = "veloura-demo-state-v1";
+const AESTHETIC_PROFILES: Record<
+  string,
+  { styleTerms: string[]; colors: string[]; occasions: string[] }
+> = {
+  "Old Money": {
+    styleTerms: ["tailored", "classic", "linen", "structured", "refined"],
+    colors: ["beige", "camel", "cream", "ivory", "brown", "gold", "neutral"],
+    occasions: ["office", "brunch", "resort"]
+  },
+  "Clean Girl": {
+    styleTerms: ["minimal", "sleek", "polished", "simple", "clean"],
+    colors: ["white", "cream", "ivory", "beige", "neutral", "black", "gold"],
+    occasions: ["everyday", "office"]
+  },
+  "Date Night": {
+    styleTerms: ["elevated", "sleek", "glam", "statement", "silky"],
+    colors: ["black", "red", "gold", "silver", "burgundy"],
+    occasions: ["date night", "party", "evening"]
+  },
+  "Office Chic": {
+    styleTerms: ["tailored", "polished", "structured", "workwear", "classic"],
+    colors: ["black", "white", "ivory", "camel", "brown", "neutral", "navy"],
+    occasions: ["office", "work"]
+  },
+  "Summer Vacation": {
+    styleTerms: ["resort", "beach", "breezy", "woven", "lightweight"],
+    colors: ["white", "ivory", "tan", "beige", "neutral", "gold", "blue"],
+    occasions: ["vacation", "beach", "resort"]
+  },
+  "Fall Capsule Wardrobe": {
+    styleTerms: ["layered", "knit", "boot", "camel", "transitional"],
+    colors: ["camel", "brown", "black", "cream", "ivory", "olive", "neutral"],
+    occasions: ["office", "everyday"]
+  }
+};
 
 function nowIso() {
   return new Date().toISOString();
@@ -193,31 +228,109 @@ function inferOccasion(occasionTags: string[]) {
   return "Everyday";
 }
 
-function findProductsForOutfit(products: Product[]) {
+function productTokens(product: Product) {
+  return new Set(
+    [
+      ...product.title.toLowerCase().split(/\s+/),
+      product.color.toLowerCase(),
+      product.aesthetic.toLowerCase(),
+      ...product.style_tags.map((tag) => tag.toLowerCase()),
+      ...product.occasion_tags.map((tag) => tag.toLowerCase())
+    ].filter(Boolean)
+  );
+}
+
+function productPalette(product: Product) {
+  return new Set([product.color.toLowerCase(), ...product.color_palette.map((color) => color.toLowerCase())]);
+}
+
+function colorHarmony(left: Product, right: Product) {
+  const leftPalette = productPalette(left);
+  const rightPalette = productPalette(right);
+  const overlap = [...leftPalette].filter((color) => rightPalette.has(color));
+  if (overlap.length) return 10 + overlap.length;
+  const neutralFamily = new Set(["black", "white", "ivory", "cream", "beige", "camel", "brown", "neutral", "gold"]);
+  if ([...leftPalette].some((color) => neutralFamily.has(color)) && [...rightPalette].some((color) => neutralFamily.has(color))) {
+    return 6;
+  }
+  return 0;
+}
+
+function scoreProduct(product: Product, aesthetic: string, usageCounts: Record<number, number>, anchorColors?: Set<string>) {
+  const profile = AESTHETIC_PROFILES[aesthetic] ?? { styleTerms: [], colors: [], occasions: [] };
+  const tokens = productTokens(product);
+  const palette = productPalette(product);
+  let score = product.aesthetic === aesthetic ? 28 : 0;
+  score += profile.styleTerms.filter((term) => tokens.has(term)).length * 6;
+  score += profile.colors.filter((color) => palette.has(color)).length * 4;
+  score += profile.occasions.filter((occasion) => tokens.has(occasion)).length * 5;
+  if (anchorColors) {
+    score += [...anchorColors].filter((color) => palette.has(color)).length * 5;
+  }
+  score -= (usageCounts[product.id] ?? 0) * 14;
+  return score;
+}
+
+function findProductsForOutfit(
+  products: Product[],
+  aesthetic: string,
+  usageCounts: Record<number, number>,
+  coreSignatures: Set<string>
+) {
   const byCategory = {
-    tops: products.find((item) => item.category === "tops"),
-    bottoms: products.find((item) => item.category === "bottoms"),
-    dresses: products.find((item) => item.category === "dresses"),
-    shoes: products.find((item) => item.category === "shoes"),
-    bags: products.find((item) => item.category === "bags"),
-    jewelry: products.find((item) => item.category === "jewelry"),
-    accessories: products.find((item) => item.category === "accessories")
+    tops: products.filter((item) => item.category === "tops"),
+    bottoms: products.filter((item) => item.category === "bottoms"),
+    dresses: products.filter((item) => item.category === "dresses"),
+    shoes: products.filter((item) => item.category === "shoes"),
+    bags: products.filter((item) => item.category === "bags"),
+    jewelry: products.filter((item) => item.category === "jewelry"),
+    accessories: products.filter((item) => item.category === "accessories")
   };
 
-  const selected: Array<{ slot: string; product: Product }> = [];
-  if (byCategory.dresses) {
-    selected.push({ slot: "dress", product: byCategory.dresses });
-  } else if (byCategory.tops && byCategory.bottoms) {
-    selected.push({ slot: "top", product: byCategory.tops });
-    selected.push({ slot: "bottom", product: byCategory.bottoms });
-  }
+  const coreCandidates: Array<{ score: number; items: Array<{ slot: string; product: Product }> }> = [];
+  byCategory.dresses.forEach((dress) => {
+    coreCandidates.push({
+      score: scoreProduct(dress, aesthetic, usageCounts) + 6,
+      items: [{ slot: "dress", product: dress }]
+    });
+  });
+  byCategory.tops.forEach((top) => {
+    byCategory.bottoms.forEach((bottom) => {
+      coreCandidates.push({
+        score: scoreProduct(top, aesthetic, usageCounts) + scoreProduct(bottom, aesthetic, usageCounts) + colorHarmony(top, bottom),
+        items: [
+          { slot: "top", product: top },
+          { slot: "bottom", product: bottom }
+        ]
+      });
+    });
+  });
 
-  if (byCategory.shoes) selected.push({ slot: "shoes", product: byCategory.shoes });
-  if (byCategory.bags) selected.push({ slot: "bag", product: byCategory.bags });
-  if (byCategory.jewelry) selected.push({ slot: "jewelry", product: byCategory.jewelry });
-  if (byCategory.accessories) selected.push({ slot: "accessory", product: byCategory.accessories });
+  const rankedCore = coreCandidates.sort((left, right) => right.score - left.score);
+  const selectedCore =
+    rankedCore.find((candidate) => !coreSignatures.has(candidate.items.map((item) => item.product.id).join("-"))) ?? rankedCore[0];
+  if (!selectedCore) return [];
 
-  return selected;
+  const selection = [...selectedCore.items];
+  const usedIds = new Set(selection.map((item) => item.product.id));
+  const anchorColors = new Set(selection.flatMap((item) => [...productPalette(item.product)]));
+
+  const addBest = (slot: string, category: Product["category"]) => {
+    const candidates = byCategory[category]
+      .filter((product) => !usedIds.has(product.id))
+      .sort((left, right) => scoreProduct(right, aesthetic, usageCounts, anchorColors) - scoreProduct(left, aesthetic, usageCounts, anchorColors));
+    const best = candidates[0];
+    if (!best) return;
+    selection.push({ slot, product: best });
+    usedIds.add(best.id);
+  };
+
+  addBest("shoes", "shoes");
+  addBest("bag", "bags");
+  addBest("jewelry", "jewelry");
+  addBest("accessory", "accessories");
+
+  return selection;
 }
 
 function outfitItems(state: DemoState, products: Array<{ slot: string; product: Product }>): OutfitItem[] {
@@ -364,10 +477,24 @@ export const demoApi = {
 
   generateOutfits(aesthetics: string[]) {
     const state = readState();
-    const selection = findProductsForOutfit(state.products);
+    const usageCounts: Record<number, number> = {};
+    const coreSignatures = new Set<string>();
     const generated = aesthetics.map((aesthetic) => {
+      const selection = findProductsForOutfit(state.products, aesthetic, usageCounts, coreSignatures);
+      if (!selection.length) {
+        return null;
+      }
       const timestamp = nowIso();
       const items = outfitItems(state, selection);
+      selection.forEach(({ product }) => {
+        usageCounts[product.id] = (usageCounts[product.id] ?? 0) + 1;
+      });
+      coreSignatures.add(
+        selection
+          .filter((item) => ["dress", "top", "bottom"].includes(item.slot))
+          .map((item) => item.product.id)
+          .join("-")
+      );
       const outfit: Outfit = {
         id: nextId(state, "outfit"),
         user_id: 1,
@@ -386,7 +513,7 @@ export const demoApi = {
         updated_at: timestamp
       };
       return outfit;
-    });
+    }).filter((outfit): outfit is Outfit => Boolean(outfit));
     state.outfits = [...generated, ...state.outfits];
     writeState(state);
     return generated;

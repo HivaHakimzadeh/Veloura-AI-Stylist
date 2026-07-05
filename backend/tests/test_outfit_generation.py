@@ -51,3 +51,40 @@ def test_select_items_for_outfit() -> None:
     assert len(selected) >= 4
     assert {slot for slot, _ in selected}.issuperset({"top", "bottom", "shoes", "bag"})
 
+
+def test_generate_outfits_rotates_products_when_catalog_has_options() -> None:
+    service = OutfitGenerationService()
+    catalog = {
+        ProductCategory.TOPS: [
+            build_product(1, ProductCategory.TOPS, "Linen Blazer", "Old Money"),
+            build_product(2, ProductCategory.TOPS, "Sleek Cardigan", "Clean Girl"),
+        ],
+        ProductCategory.BOTTOMS: [
+            build_product(3, ProductCategory.BOTTOMS, "Wide Leg Trousers", "Old Money"),
+            build_product(4, ProductCategory.BOTTOMS, "Column Skirt", "Clean Girl"),
+        ],
+        ProductCategory.DRESSES: [],
+        ProductCategory.SHOES: [
+            build_product(5, ProductCategory.SHOES, "Leather Loafer", "Office Chic"),
+            build_product(6, ProductCategory.SHOES, "Slingback Heel", "Date Night"),
+        ],
+        ProductCategory.BAGS: [
+            build_product(7, ProductCategory.BAGS, "Structured Tote", "Office Chic"),
+            build_product(8, ProductCategory.BAGS, "Mini Shoulder Bag", "Date Night"),
+        ],
+        ProductCategory.JEWELRY: [build_product(9, ProductCategory.JEWELRY, "Gold Hoop", "Clean Girl")],
+        ProductCategory.ACCESSORIES: [],
+    }
+
+    usage_counts = {}
+    core_signatures: set[tuple[int, ...]] = set()
+    first = service._select_items_for_aesthetic(catalog, "Old Money", usage_counts, core_signatures)
+    core_signatures.add(service._core_signature(first))
+    for _slot, product in first:
+        usage_counts[product.id] = usage_counts.get(product.id, 0) + 1
+
+    second = service._select_items_for_aesthetic(catalog, "Clean Girl", usage_counts, core_signatures)
+
+    assert tuple(product.id for slot, product in first if slot in {"top", "bottom", "dress"}) != tuple(
+        product.id for slot, product in second if slot in {"top", "bottom", "dress"}
+    )

@@ -1,34 +1,104 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,500&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color: #2e2018;
-  background: #fcfaf7;
+  color: #211a14;
+  background: #f8f3ea;
+  --paper: #f8f3ea;
+  --ink: #211a14;
+  --rosewood: #8f4e3f;
+  --gold: #b08d57;
+  --line: #e2d6c4;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   font-family: "DM Sans", sans-serif;
-  background-image: radial-gradient(circle at top left, rgba(243, 217, 195, 0.9), transparent 35%),
-    radial-gradient(circle at 90% 10%, rgba(214, 201, 176, 0.7), transparent 30%),
-    linear-gradient(180deg, #fcfaf7 0%, #f0e6db 100%);
-  color: #2e2018;
+  color: var(--ink);
+  /* Editorial paper: warm grain + soft light from the top-left, subtle vignette */
+  background-color: var(--paper);
+  background-image: radial-gradient(circle at 12% -5%, rgba(216, 195, 160, 0.5), transparent 42%),
+    radial-gradient(circle at 92% 0%, rgba(232, 213, 204, 0.55), transparent 38%),
+    radial-gradient(circle at 50% 120%, rgba(179, 146, 114, 0.14), transparent 55%),
+    linear-gradient(180deg, #fbf8f2 0%, #f4ebdd 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 #root {
   min-height: 100vh;
 }
 
-.glass-card {
-  background: rgba(255, 251, 245, 0.8);
-  backdrop-filter: blur(16px);
+::selection {
+  background: rgba(143, 78, 63, 0.16);
+  color: #211a14;
 }
 
+/* Editorial glass — warmer, tighter blur, hairline top light */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255, 253, 249, 0.86), rgba(251, 246, 238, 0.72));
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+}
+
+/* Custom editorial scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143, 78, 63, 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(143, 78, 63, 0.45), rgba(176, 141, 87, 0.4));
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(143, 78, 63, 0.7), rgba(176, 141, 87, 0.6));
+  background-clip: padding-box;
+}
+
+/* Horizontal snap rails (e.g. mobile nav) hide the bar for a clean editorial rail */
+.rail-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rail-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Thin editorial hairline used to separate masthead / sections */
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line) 12%, var(--line) 88%, transparent);
+}
+
+/* Fine ledger dot leader used in stat/index rows */
+.leader {
+  flex: 1;
+  border-bottom: 1px dotted rgba(143, 78, 63, 0.35);
+  transform: translateY(-4px);
+}

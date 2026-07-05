@@ -65,7 +65,7 @@ export function OutfitGallery({ outfits, recommendedAesthetics, onGenerated }: O
       {error ? <p className="mb-4 text-sm text-rosewood">{error}</p> : null}
       <div className="grid gap-4 xl:grid-cols-2">
         {outfits.map((outfit) => (
-          <article key={outfit.id} className="rounded-[28px] border border-white/60 bg-white/75 p-5">
+          <article key={outfit.id} className="rounded-[28px] border border-line bg-parchment/70 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-display text-2xl">{outfit.title}</h3>
@@ -87,7 +87,7 @@ export function OutfitGallery({ outfits, recommendedAesthetics, onGenerated }: O
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {outfit.keywords.map((keyword) => (
-                <span key={keyword} className="rounded-full bg-white px-3 py-1 text-xs text-espresso/70">
+                <span key={keyword} className="rounded-full bg-paper px-3 py-1 text-xs text-espresso/70">
                   {keyword}
                 </span>
               ))}
@@ -95,7 +95,7 @@ export function OutfitGallery({ outfits, recommendedAesthetics, onGenerated }: O
           </article>
         ))}
         {!outfits.length ? (
-          <div className="rounded-[28px] border border-dashed border-white/70 bg-white/40 p-6 text-sm text-espresso/70">
+          <div className="rounded-[28px] border border-dashed border-line bg-parchment/50 p-6 text-sm text-espresso/70">
             Add a few products, then generate outfits for Pinterest-ready aesthetics.
           </div>
         ) : null}

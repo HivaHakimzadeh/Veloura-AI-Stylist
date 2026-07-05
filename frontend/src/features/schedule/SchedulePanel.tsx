@@ -78,7 +78,7 @@ export function SchedulePanel({
         <form className="space-y-4" onSubmit={createSchedule}>
           <div className="grid gap-3 md:grid-cols-2">
             <select
-              className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
+              className="rounded-2xl border border-line bg-parchment/70 px-4 py-3"
               value={scheduleForm.generated_board_id}
               onChange={(event) =>
                 setScheduleForm((current) => ({ ...current, generated_board_id: Number(event.target.value) }))
@@ -92,7 +92,7 @@ export function SchedulePanel({
               ))}
             </select>
             <select
-              className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
+              className="rounded-2xl border border-line bg-parchment/70 px-4 py-3"
               value={scheduleForm.pinterest_board_id}
               onChange={(event) =>
                 setScheduleForm((current) => ({ ...current, pinterest_board_id: Number(event.target.value) }))
@@ -106,7 +106,7 @@ export function SchedulePanel({
               ))}
             </select>
             <select
-              className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
+              className="rounded-2xl border border-line bg-parchment/70 px-4 py-3"
               value={scheduleForm.campaign_type}
               onChange={(event) =>
                 setScheduleForm((current) => ({
@@ -122,7 +122,7 @@ export function SchedulePanel({
               ))}
             </select>
             <input
-              className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
+              className="rounded-2xl border border-line bg-parchment/70 px-4 py-3"
               type="datetime-local"
               value={scheduleForm.scheduled_for}
               onChange={(event) => setScheduleForm((current) => ({ ...current, scheduled_for: event.target.value }))}
@@ -130,7 +130,7 @@ export function SchedulePanel({
             />
           </div>
           <textarea
-            className="w-full rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
+            className="w-full rounded-2xl border border-line bg-parchment/70 px-4 py-3"
             rows={4}
             placeholder="Pinterest caption"
             value={scheduleForm.caption}
@@ -138,7 +138,7 @@ export function SchedulePanel({
             required
           />
           <input
-            className="w-full rounded-2xl border border-white/60 bg-white/70 px-4 py-3"
+            className="w-full rounded-2xl border border-line bg-parchment/70 px-4 py-3"
             placeholder="Hashtags, comma separated"
             value={scheduleForm.hashtags}
             onChange={(event) => setScheduleForm((current) => ({ ...current, hashtags: event.target.value }))}
@@ -152,7 +152,7 @@ export function SchedulePanel({
               {submitting ? "Scheduling..." : "Schedule Pin"}
             </button>
             <button
-              className="rounded-full border border-espresso/20 bg-white/70 px-5 py-3 text-sm font-medium text-espresso"
+              className="rounded-full border border-espresso/20 bg-parchment/70 px-5 py-3 text-sm font-medium text-espresso"
               type="button"
               onClick={() => void autofill()}
             >
@@ -162,18 +162,18 @@ export function SchedulePanel({
           {message ? <p className="text-sm text-espresso/70">{message}</p> : null}
         </form>
         <div className="space-y-4">
-          <form className="rounded-[28px] border border-white/60 bg-white/60 p-5" onSubmit={createPinterestBoard}>
+          <form className="rounded-[28px] border border-line bg-parchment/60 p-5" onSubmit={createPinterestBoard}>
             <p className="font-display text-xl">Create Pinterest Board</p>
             <div className="mt-4 space-y-3">
               <input
-                className="w-full rounded-2xl border border-white/60 bg-white/80 px-4 py-3"
+                className="w-full rounded-2xl border border-line bg-parchment/80 px-4 py-3"
                 placeholder="Board name"
                 value={boardForm.name}
                 onChange={(event) => setBoardForm((current) => ({ ...current, name: event.target.value }))}
                 required
               />
               <textarea
-                className="w-full rounded-2xl border border-white/60 bg-white/80 px-4 py-3"
+                className="w-full rounded-2xl border border-line bg-parchment/80 px-4 py-3"
                 placeholder="Board description"
                 rows={3}
                 value={boardForm.description}
@@ -184,7 +184,7 @@ export function SchedulePanel({
               </button>
             </div>
           </form>
-          <div className="rounded-[28px] border border-white/60 bg-white/60 p-5">
+          <div className="rounded-[28px] border border-line bg-parchment/60 p-5">
             <p className="font-display text-xl">Upcoming Queue</p>
             <div className="mt-4 space-y-3">
               {scheduledPosts.slice(0, 5).map((post) => (
